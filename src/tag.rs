@@ -2,21 +2,20 @@
 
 pub struct Tag {
     pub id: String,
-    value: Value,
+    value: TagValue,
+}
+
+pub struct TagSetting {
     /// Если тэг только на чтение, то в него нельзя записывать
     read_only: bool,
     /// Тэг можно выключить если он не нужен
     enabled: bool,
 }
 
-/// Тип данных. Может использовать json::Value ?
-pub enum Value {
-    /// Булевое состояние или флаг
-    Boolean(bool),
-    /// Целочисленное значение
-    Integer(i32),
-    /// Вещественное значение
-    Float(f32),
-    /// Строговая информация
-    String(String),
+pub type TagValue = serde_json::Value;
+
+impl Tag {
+    pub fn value(&self) -> &TagValue {
+        &self.value
+    }
 }
