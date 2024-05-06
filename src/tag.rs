@@ -3,6 +3,12 @@ use bevy::prelude::*;
 
 mod sensor;
 
+fn tag_plugin(app: &mut App) {
+    app.add_systems(Update, (
+        sensor::check_bounds
+    ));
+}
+
 #[derive(Bundle)]
 pub struct Tag {
     pub id: TagID,
