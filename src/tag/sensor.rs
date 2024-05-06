@@ -1,10 +1,11 @@
 use bevy::prelude::*;
-use crate::tag::Tag;
+use super::{Tag, TagValue};
 
 #[derive(Bundle)]
 pub struct Sensor {
     tag: Tag,
     bounds: SensorBounds,
+    status: SensorStatus,
 }
 
 enum BoundError {
@@ -30,6 +31,11 @@ pub struct SensorBounds {
     low: Option<BoundLevel>,
 }
 
+#[derive(Component, Default)]
+pub struct SensorStatus {
+    error: Option<SensorError>,
+}
+
 impl SensorBounds {
     pub fn check_value(&self, value: f32) -> Option<SensorError> {
         if let Some(bound) = &self.top {
@@ -51,6 +57,16 @@ impl SensorBounds {
     }
 }
 
+fn check_bounds(mut sensors: Query<(&TagValue, &SensorBounds, &mut SensorStatus)>) {
+    let mut itr = sensors.iter_mut()
+        .filter_map(|(v,b,s)|
+            Some((v.as_number()?.as_f64()?, b, s))
+        );
+    for (value, bounds, mut status) in itr {
+        status.error = bounds.check_value(value as f32);
+    }
+}
+
 #[test]
 fn test_sensor_bound() {
 
@@ -61,7 +77,7 @@ fn test_sensor_bound() {
         .spawn(Sensor {
             tag: Tag {
                 id: "my_id".into(),
-                value: Default::default(),
+                value: serde_json::json!{55.0}.into(),
                 setting: Default::default(),
             },
             bounds: SensorBounds {
@@ -70,7 +86,8 @@ fn test_sensor_bound() {
                     error: 80.0,
                 }),
                 low: None,
-            }
+            },
+            status: default(),
         }).id();
 
     // Run systems

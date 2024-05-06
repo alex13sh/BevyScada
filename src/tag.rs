@@ -1,6 +1,8 @@
 ///! Входной / выходной физический или виртуальный канал
 use bevy::prelude::*;
 
+mod sensor;
+
 #[derive(Bundle)]
 pub struct Tag {
     pub id: TagID,
@@ -25,11 +27,11 @@ pub struct TagSetting {
     enabled: bool,
 }
 
-#[derive(Component, Default, Deref)]
+#[derive(Component, Default, Deref, derive_more::From)]
 pub struct TagValue(pub serde_json::Value);
 
 impl Tag {
-    pub fn value(&self) -> &TagValue {
+    pub fn value(&self) -> &serde_json::Value {
         &self.value
     }
 }

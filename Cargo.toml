@@ -8,6 +8,7 @@ edition = "2021"
 [dependencies]
 #bevy_app = "0.13.2"
 bevy = { version = "0.13.2", default-features = false, features = ["multi-threaded"] }
+derive_more = { version = "0.99.17", default-features = false, features = ["from", "from_str", "into", "as_ref", "as_mut", "into_iterator"] }
 serde = { version = "1.0.200", features = ["derive"] }
 serde_json = "1.0.116"
 

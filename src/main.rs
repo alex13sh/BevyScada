@@ -1,6 +1,5 @@
 use bevy::prelude::*;
 mod tag;
-mod sensor;
 
 fn main() {
     App::new()
