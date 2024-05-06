@@ -8,11 +8,13 @@ pub struct Sensor {
     status: SensorStatus,
 }
 
+#[derive(Debug, PartialEq)]
 enum BoundError {
     WarnLevel,
     ErrorLevel,
 }
 
+#[derive(Debug, PartialEq)]
 enum SensorError {
     LowBound(BoundError),
     TopBound(BoundError),
@@ -31,7 +33,7 @@ pub struct SensorBounds {
     low: Option<BoundLevel>,
 }
 
-#[derive(Component, Default)]
+#[derive(Component, Default, Debug, PartialEq)]
 pub struct SensorStatus {
     error: Option<SensorError>,
 }
@@ -57,7 +59,7 @@ impl SensorBounds {
     }
 }
 
-fn check_bounds(mut sensors: Query<(&TagValue, &SensorBounds, &mut SensorStatus)>) {
+pub(super) fn check_bounds(mut sensors: Query<(&TagValue, &SensorBounds, &mut SensorStatus)>) {
     let mut itr = sensors.iter_mut()
         .filter_map(|(v,b,s)|
             Some((v.as_number()?.as_f64()?, b, s))
@@ -69,6 +71,17 @@ fn check_bounds(mut sensors: Query<(&TagValue, &SensorBounds, &mut SensorStatus)
 
 #[test]
 fn test_sensor_bound() {
+    let bounds = SensorBounds {
+        top: Some(BoundLevel {
+            warn: 60.0,
+            error: 80.0,
+        }),
+        low: None,
+    };
+
+    assert_eq!(bounds.check_value(55.0), None);
+    assert_eq!(bounds.check_value(65.0), Some(SensorError::TopBound(BoundError::WarnLevel)));
+    assert_eq!(bounds.check_value(85.0), Some(SensorError::TopBound(BoundError::ErrorLevel)));
 
     // Setup app
     let mut app = App::new();
@@ -80,20 +93,24 @@ fn test_sensor_bound() {
                 value: serde_json::json!{55.0}.into(),
                 setting: Default::default(),
             },
-            bounds: SensorBounds {
-                top: Some(BoundLevel {
-                    warn: 60.0,
-                    error: 80.0,
-                }),
-                low: None,
-            },
+            bounds: bounds,
             status: default(),
         }).id();
+
+    app.add_systems(Update, (check_bounds));
 
     // Run systems
     app.update();
 
     // Check resulting changes
     assert!(app.world.get::<SensorBounds>(id).is_some());
+    assert_eq!(app.world.get::<SensorStatus>(id).unwrap().error, None);
 
+    *app.world.get_mut::<TagValue>(id).unwrap() = serde_json::json!{65.0}.into();
+    app.update();
+    assert_eq!(app.world.get::<SensorStatus>(id).unwrap().error, Some(SensorError::TopBound(BoundError::WarnLevel)));
+
+    *app.world.get_mut::<TagValue>(id).unwrap() = serde_json::json!{85.0}.into();
+    app.update();
+    assert_eq!(app.world.get::<SensorStatus>(id).unwrap().error, Some(SensorError::TopBound(BoundError::ErrorLevel)));
 }
