@@ -1,6 +1,9 @@
 ///! Устройство, которое генерирует IO Tags
 use bevy::prelude::*;
 
+mod owen;
+mod register;
+
 #[derive(Bundle)]
 pub struct Device {
     // register as children
@@ -14,19 +17,12 @@ pub struct Transport {
 
 }
 
-#[derive(Bundle)]
-pub struct Register {
-    // address
-    // enabled
-    // raw value as u32 or ByteArray
-    value: RegisterValue,
-}
+/// Для наименования устройств и регистров
+#[derive(Component, Debug, PartialEq)]
+pub struct Name(String);
 
-#[derive(Component, Debug, PartialEq, Deref)]
-pub struct RegisterValue(u32);
+// pub struct Description(String);
 
-/// Источник данных из регистров для Tag
-/// Ну или в один entity хранить Register и Tag
-pub struct RegisterSource {
-    // endtity id of register
-}
+/// Включние/выключение устройства, регстр или пин.
+#[derive(Component, Debug, PartialEq)]
+pub struct Enabled(bool);
