@@ -59,7 +59,7 @@ impl TryFrom<u8> for RegisterSize {
 }
 
 /// Карта регистров для каждого устройства
-#[derive(Serialize, Deserialize, Debug)]
+#[derive(Component, Serialize, Deserialize, Debug)]
 pub struct RegistersMap {
     registers: BTreeMap<RegisterAddress, RegisterConfig>,
 }
