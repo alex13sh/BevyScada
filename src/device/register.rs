@@ -5,10 +5,11 @@ use super::{
 use bevy::prelude::*;
 use std::collections::BTreeMap;
 use serde::{Serialize, Deserialize};
+use derive_more::From;
 
 #[derive(Bundle)]
 pub struct Register {
-    // address
+    address: RegisterAddress,
     enabled: Enabled,
     // raw value as u32 or ByteArray
     value: RegisterValue,
@@ -59,35 +60,42 @@ impl TryFrom<u8> for RegisterSize {
 }
 
 /// Карта регистров для каждого устройства
-#[derive(Component, Serialize, Deserialize, Debug)]
-pub struct RegistersMap {
-    registers: BTreeMap<RegisterAddress, RegisterConfig>,
-}
+#[derive(Component, Serialize, Deserialize, From)]
+#[derive(Debug, Default, PartialEq)]
+pub struct RegistersMap ( BTreeMap<RegisterAddress, RegisterConfig>);
 
-#[test]
-fn test_registers_map_conf() {
-    let js = serde_json::json!({
-        "1": {
-            "io": "ReadOnly",
-            "size": "FourBytes"
-        },
-        "3": {
-            "io": "ReadWrite",
-            "size": 2
-        }
-    });
-    let test_map: BTreeMap<RegisterAddress, RegisterConfig> = serde_json::from_value(js).unwrap();
-    let mut regs = BTreeMap::new();
-    regs.insert(RegisterAddress(1), RegisterConfig{
-        io: RegisterIO::ReadOnly,
-        size: RegisterSize::FourBytes,
-    });
-    regs.insert(RegisterAddress(3), RegisterConfig{
-        io: RegisterIO::ReadWrite,
-        size: RegisterSize::TwoBytes,
-    });
+#[cfg(test)]
+pub mod tests {
+    use super::*;
+    pub fn get_test_regs() -> RegistersMap {
+        let mut regs = BTreeMap::new();
+        regs.insert(RegisterAddress(1), RegisterConfig{
+            io: RegisterIO::ReadOnly,
+            size: RegisterSize::FourBytes,
+        });
+        regs.insert(RegisterAddress(3), RegisterConfig{
+            io: RegisterIO::ReadWrite,
+            size: RegisterSize::TwoBytes,
+        });
+        RegistersMap ( regs)
+    }
+    #[test]
+    fn test_registers_map_conf() {
+        let js = serde_json::json!({
+            "1": {
+                "io": "ReadOnly",
+                "size": "FourBytes"
+            },
+            "3": {
+                "io": "ReadWrite",
+                "size": 2
+            }
+        });
+        let test_map: RegistersMap = serde_json::from_value(js).unwrap();
+        let mut regs = get_test_regs();
 
-    assert_eq!(regs, test_map);
+        assert_eq!(regs, test_map);
+    }
 }
 
 /// Источник данных из регистров для Tag
