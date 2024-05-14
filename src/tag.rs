@@ -1,12 +1,10 @@
 ///! Входной / выходной физический или виртуальный канал
 use bevy::prelude::*;
 
-mod sensor;
+pub mod sensor;
 
 fn tag_plugin(app: &mut App) {
-    app.add_systems(Update, (
-        sensor::check_bounds
-    ));
+    app.add_systems(Update, sensor::check_bounds);
 }
 
 #[derive(Bundle)]

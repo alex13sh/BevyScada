@@ -2,7 +2,7 @@
 use bevy::prelude::*;
 use serde::{Serialize, Deserialize};
 use derivative::Derivative;
-mod owen;
+// mod owen;
 mod register;
 
 #[derive(Bundle)]
@@ -56,7 +56,6 @@ pub struct Registers {
 
 #[test]
 fn test_device_conf() {
-    use std::collections::BTreeMap;
     let js = serde_json::json!({
         "name": "Analog Device",
         "config": {
@@ -73,7 +72,7 @@ fn test_device_conf() {
         },
     });
     let test_device: Device = serde_json::from_value(js).unwrap();
-    let mut regs = register::tests::get_test_regs();
+    let regs = register::tests::get_test_regs();
     let device = Device {
         name: Name("Analog Device".into()),
         enable: Enabled::default(),

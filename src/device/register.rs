@@ -92,7 +92,7 @@ pub mod tests {
             }
         });
         let test_map: RegistersMap = serde_json::from_value(js).unwrap();
-        let mut regs = get_test_regs();
+        let regs = get_test_regs();
 
         assert_eq!(regs, test_map);
     }
