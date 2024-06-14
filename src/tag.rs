@@ -1,17 +1,19 @@
 ///! Входной / выходной физический или виртуальный канал
 use bevy::prelude::*;
-
+use serde::{Serialize, de::DeserializeOwned};
 pub mod sensor;
+pub mod dozator;
 
 fn tag_plugin(app: &mut App) {
     app.add_systems(Update, sensor::check_bounds);
 }
 
 #[derive(Bundle)]
-pub struct Tag {
+pub struct TagBundle<V: TagExt> {
     pub id: TagID,
-    pub value: TagValue,
-    pub setting: TagSetting
+    pub json_value: TagValue,
+    pub setting: TagSetting,
+    pub value: Tag<V>,
 }
 
 #[derive(Component, Debug, PartialEq)]
@@ -20,6 +22,29 @@ pub struct TagID(pub String);
 impl From<&'static str> for TagID {
     fn from(id: &'static str) -> Self {
         TagID(String::from(id))
+    }
+}
+
+#[derive(Component)]
+pub struct Tag<V: TagExt> {
+    refs: V::Refs,
+    value: V,
+}
+
+pub trait TagExt: Serialize + DeserializeOwned + Sync + Send + 'static {
+    type Refs: Sync + Send;
+    // type Error;
+}
+
+impl TagExt for () {
+    type Refs = ();
+}
+impl From<()> for Tag<()> {
+    fn from(_:()) -> Self {
+        Tag {
+            value: (),
+            refs: (),
+        }
     }
 }
 
@@ -34,9 +59,9 @@ pub struct TagSetting {
 #[derive(Component, Default, Deref, derive_more::From)]
 pub struct TagValue(pub serde_json::Value);
 
-impl Tag {
+impl <V: TagExt> TagBundle<V> {
     pub fn value(&self) -> &serde_json::Value {
-        &self.value
+        &self.json_value
     }
 }
 
@@ -48,10 +73,11 @@ fn test_tag() {
     let mut app = App::new();
 
     let id = app.world
-        .spawn(Tag {
+        .spawn(TagBundle {
             id: "my_id".into(),
-            value: TagValue(serde_json::Value::Null),
+            json_value: TagValue(serde_json::Value::Null),
             setting: TagSetting::default(),
+            value: ().into(),
         }).id();
 
     // Run systems

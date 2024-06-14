@@ -1,9 +1,9 @@
 use bevy::prelude::*;
-use super::{Tag, TagValue};
+use super::{TagBundle, TagValue};
 
 #[derive(Bundle)]
 pub struct Sensor {
-    tag: Tag,
+    tag: TagBundle<()>,
     bounds: SensorBounds,
     status: SensorStatus,
 }
@@ -88,10 +88,11 @@ fn test_sensor_bound() {
 
     let id = app.world
         .spawn(Sensor {
-            tag: Tag {
+            tag: TagBundle {
                 id: "my_id".into(),
-                value: serde_json::json!{55.0}.into(),
+                json_value: serde_json::json!{55.0}.into(),
                 setting: Default::default(),
+                value: ().into(),
             },
             bounds: bounds,
             status: default(),

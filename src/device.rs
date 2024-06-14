@@ -20,6 +20,7 @@ pub struct Device {
     #[serde(skip)]
     #[derivative(PartialEq="ignore")]
     registers: Registers,
+    // TODO: Добавить список IO Tag
 }
 
 #[derive(Component, Debug, PartialEq)]
@@ -45,12 +46,15 @@ pub struct Enabled(bool);
 #[derive(Serialize, Deserialize)]
 pub struct DeviceConfig {
     registers_map: register::RegistersMap,
+    // TODO: Добавить IO Tags
+    // TODO: Добавить список групп IO Tags. Это может быть IO Pin.
+    // IO Pin - может быть Тэгом (Tag), который ссылается на IO Tag
 }
 
 #[derive(Component, Debug, Default)]
 pub struct Registers {
     registers: Vec<Entity>,
-
+    // TODO: Илю сюда добавить список IO Tag
 }
 
 
