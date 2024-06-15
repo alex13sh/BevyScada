@@ -1,5 +1,6 @@
 use bevy::prelude::*;
 mod tag;
+mod device;
 
 fn main() {
     App::new()

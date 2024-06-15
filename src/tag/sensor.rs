@@ -1,21 +1,21 @@
 use bevy::prelude::*;
-use super::{Tag, TagValue};
+use super::{TagBundle, TagValue};
 
 #[derive(Bundle)]
 pub struct Sensor {
-    tag: Tag,
+    tag: TagBundle<()>,
     bounds: SensorBounds,
     status: SensorStatus,
 }
 
 #[derive(Debug, PartialEq)]
-enum BoundError {
+pub enum BoundError {
     WarnLevel,
     ErrorLevel,
 }
 
 #[derive(Debug, PartialEq)]
-enum SensorError {
+pub enum SensorError {
     LowBound(BoundError),
     TopBound(BoundError),
 }
@@ -60,7 +60,7 @@ impl SensorBounds {
 }
 
 pub(super) fn check_bounds(mut sensors: Query<(&TagValue, &SensorBounds, &mut SensorStatus)>) {
-    let mut itr = sensors.iter_mut()
+    let itr = sensors.iter_mut()
         .filter_map(|(v,b,s)|
             Some((v.as_number()?.as_f64()?, b, s))
         );
@@ -88,16 +88,17 @@ fn test_sensor_bound() {
 
     let id = app.world
         .spawn(Sensor {
-            tag: Tag {
+            tag: TagBundle {
                 id: "my_id".into(),
-                value: serde_json::json!{55.0}.into(),
+                json_value: serde_json::json!{55.0}.into(),
                 setting: Default::default(),
+                value: ().into(),
             },
             bounds: bounds,
             status: default(),
         }).id();
 
-    app.add_systems(Update, (check_bounds));
+    app.add_systems(Update, check_bounds);
 
     // Run systems
     app.update();
