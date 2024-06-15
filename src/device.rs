@@ -4,17 +4,22 @@ use serde::{Serialize, Deserialize};
 use derivative::Derivative;
 // mod owen;
 mod register;
+use crate::{Transport, TarnsportDynamic, TransportExt};
 
 #[derive(Bundle)]
 #[derive(Serialize, Deserialize)]
 #[derive(Debug)]
 #[derive(Derivative)]
 #[derivative(PartialEq)]
-pub struct Device {
+pub struct Device<T: TransportExt + Default = TarnsportDynamic> {
     name: Name,
     #[serde(default)]
     enable: Enabled,
     // transport: tcp modbus, mqtt
+    // #[serde(skip)]
+    #[derivative(PartialEq="ignore")]
+    
+    transport: Transport<T>,
     config: DeviceConfig,
     // register as children
     #[serde(skip)]
@@ -25,10 +30,6 @@ pub struct Device {
 
 #[derive(Component, Debug, PartialEq)]
 pub struct DeviceID(pub String);
-
-pub struct Transport {
-
-}
 
 /// Для наименования устройств и регистров
 #[derive(Component, Debug, PartialEq)]
@@ -74,8 +75,11 @@ fn test_device_conf() {
                 }
             }
         },
+        "transport": {
+            "config": (),
+        },
     });
-    let test_device: Device = serde_json::from_value(js).unwrap();
+    let test_device: Device<()> = serde_json::from_value(js).unwrap();
     let regs = register::tests::get_test_regs();
     let device = Device {
         name: Name("Analog Device".into()),
@@ -83,6 +87,7 @@ fn test_device_conf() {
         config: DeviceConfig {
             registers_map: regs,
         },
+        transport: ().into(),
         registers: Default::default(),
     };
 
